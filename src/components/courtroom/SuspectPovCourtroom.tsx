@@ -23,7 +23,7 @@ export const SuspectPovCourtroom: React.FC<SuspectPovCourtroomProps> = ({
   const isSlamming = prosecutorState === 'slam';
 
   return (
-    <div className="relative w-full h-full min-h-[460px] bg-[#0E0B09] flex flex-col items-center justify-start overflow-hidden select-none">
+    <div className="relative w-full h-full min-h-0 bg-[#0E0B09] flex flex-col items-center justify-start overflow-hidden select-none">
       
       {/* 1. Üst Ambiyans & Maun Arka Plan Gradyanı */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#18110D] via-[#120D0A] to-[#0A0706] pointer-events-none" />
@@ -38,8 +38,8 @@ export const SuspectPovCourtroom: React.FC<SuspectPovCourtroomProps> = ({
       </div>
 
       {/* Duvar Ortasında Bronz Adalet Mührü Silüeti */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full border border-amber-600/15 flex items-center justify-center pointer-events-none opacity-30 shadow-[0_0_50px_rgba(180,83,9,0.08)]">
-        <div className="w-36 h-36 rounded-full border border-dashed border-amber-600/20 flex items-center justify-center text-[10px] tracking-widest text-amber-500/30 font-bold uppercase rotate-12">
+      <div className="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 w-36 h-36 sm:w-44 sm:h-44 rounded-full border border-amber-600/15 flex items-center justify-center pointer-events-none opacity-30 shadow-[0_0_50px_rgba(180,83,9,0.08)]">
+        <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border border-dashed border-amber-600/20 flex items-center justify-center text-[9px] sm:text-[10px] tracking-widest text-amber-500/30 font-bold uppercase rotate-12 text-center px-2">
           ADALET MÜLKÜN TEMELİDİR
         </div>
       </div>
@@ -54,16 +54,16 @@ export const SuspectPovCourtroom: React.FC<SuspectPovCourtroomProps> = ({
 
       {/* 3. Fısıltı Gerilim Uyarısı (Hakimler kafa kafaya verince parlar) */}
       {(isWhispering || statusText) && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-pulse">
-          <div className="bg-gradient-to-r from-rose-950/90 via-amber-950/90 to-rose-950/90 backdrop-blur-md px-4 py-1.5 rounded-full border border-rose-500/50 text-xs font-semibold text-rose-200 flex items-center gap-2 shadow-[0_0_25px_rgba(244,63,94,0.35)]">
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-            <span>{statusText || '👁️ Hakimler şu an kürsüde senin hakkında fısıldaşıyor...'}</span>
+        <div className="absolute top-10 sm:top-12 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-30 pointer-events-none animate-pulse flex justify-center">
+          <div className="bg-gradient-to-r from-rose-950/95 via-amber-950/95 to-rose-950/95 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border border-rose-500/50 text-[11px] sm:text-xs font-semibold text-rose-200 flex items-center justify-center gap-1.5 shadow-[0_0_25px_rgba(244,63,94,0.35)] text-center">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0" />
+            <span className="truncate">{statusText || '👁️ Hakimler kürsüde fısıldaşıyor...'}</span>
           </div>
         </div>
       )}
 
       {/* 4. ANA MAHKEME KÜRSÜSÜ VE HAKİMLER SAHNESİ (Detaylı Noir Vektör İllüstrasyon) */}
-      <div className="relative z-10 w-full max-w-[620px] h-[400px] mt-2 flex flex-col items-center justify-center">
+      <div className="relative z-10 w-full max-w-[620px] h-[270px] sm:h-[400px] mt-1 sm:mt-2 flex flex-col items-center justify-center">
         <svg
           viewBox="0 0 600 420"
           className="w-full h-full drop-shadow-[0_15px_30px_rgba(0,0,0,0.9)]"
@@ -414,30 +414,30 @@ export const SuspectPovCourtroom: React.FC<SuspectPovCourtroomProps> = ({
         {/* E. HUD ETİKETLERİ (1. HAKİM VE 2. HAKİM İÇİN)                 */}
         {/* ============================================================== */}
         {/* 1. HAKİM HUD Etiketi (Sol Üst) */}
-        <div className="absolute top-4 left-6 sm:left-14 flex items-center gap-2">
-          <div className={`px-2.5 py-1 rounded-md border flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-all ${
+        <div className="absolute top-1.5 left-3 sm:top-4 sm:left-14 flex items-center gap-2 pointer-events-none">
+          <div className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border flex items-center gap-1.5 backdrop-blur-md shadow-lg whitespace-nowrap transition-all ${
             isSertHakimTalking
               ? 'bg-rose-950/90 border-rose-500 text-rose-200 ring-2 ring-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.4)]'
-              : 'bg-black/60 border-rose-500/30 text-rose-300/90'
+              : 'bg-black/65 border-rose-500/30 text-rose-300/90'
           }`}>
-            <span className="font-extrabold text-[11px] tracking-wider uppercase">1. HAKİM</span>
-            <span className={`w-2 h-2 rounded-full ${
+            <span className="font-extrabold text-[10px] sm:text-[11px] tracking-wider uppercase">1. HAKİM</span>
+            <span className={`w-2 h-2 rounded-full shrink-0 ${
               isSertHakimTalking ? 'bg-rose-500 animate-ping' : 'bg-rose-600'
             }`} />
           </div>
         </div>
 
         {/* 2. HAKİM HUD Etiketi (Sağ Üst) */}
-        <div className="absolute top-4 right-6 sm:right-14 flex items-center gap-2">
-          <div className={`px-2.5 py-1 rounded-md border flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-all ${
+        <div className="absolute top-1.5 right-3 sm:top-4 sm:right-14 flex items-center gap-2 pointer-events-none">
+          <div className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border flex items-center gap-1.5 backdrop-blur-md shadow-lg whitespace-nowrap transition-all ${
             isYumusakHakimTalking
               ? 'bg-amber-950/90 border-amber-400 text-amber-200 ring-2 ring-amber-400/40 shadow-[0_0_15px_rgba(251,191,36,0.4)]'
-              : 'bg-black/60 border-amber-500/30 text-amber-300/90'
+              : 'bg-black/65 border-amber-500/30 text-amber-300/90'
           }`}>
-            <span className={`w-2 h-2 rounded-full ${
+            <span className={`w-2 h-2 rounded-full shrink-0 ${
               isYumusakHakimTalking ? 'bg-amber-400 animate-ping' : 'bg-amber-500'
             }`} />
-            <span className="font-extrabold text-[11px] tracking-wider uppercase">2. HAKİM</span>
+            <span className="font-extrabold text-[10px] sm:text-[11px] tracking-wider uppercase">2. HAKİM</span>
           </div>
         </div>
 

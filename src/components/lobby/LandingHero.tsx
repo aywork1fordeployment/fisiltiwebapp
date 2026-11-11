@@ -49,20 +49,20 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
     <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center p-4 text-center select-none gap-5">
       
       {/* 1. Üst Rozet & Hafızayı Sıfırla Butonu */}
-      <div className="w-full flex items-center justify-between gap-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-semibold tracking-wide">
-          <Shield className="w-3.5 h-3.5" />
-          <span>Sıfır Kayıt & Sıfır-Veri | 180 Saniye</span>
+      <div className="w-full flex flex-wrap items-center justify-between gap-2">
+        <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[10.5px] sm:text-xs font-semibold tracking-wide whitespace-nowrap">
+          <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+          <span>Sıfır Kayıt & Sıfır-Veri | 180sn</span>
         </div>
 
         {onResetStorage && (
           <button
             onClick={onResetStorage}
             title="Önceki test kayıtlarını ve kuyruğu sıfırla"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/40 hover:border-rose-400 text-rose-300 text-[11px] font-medium transition-all active:scale-95 shadow-sm"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/40 hover:border-rose-400 text-rose-300 text-[10.5px] sm:text-[11px] font-medium whitespace-nowrap transition-all active:scale-95 shadow-sm"
           >
-            <RotateCcw className="w-3 h-3 text-rose-400" />
-            <span>🔄 Hafızayı Sıfırla</span>
+            <RotateCcw className="w-3 h-3 text-rose-400 shrink-0" />
+            <span>Hafızayı Sıfırla</span>
           </button>
         )}
       </div>
