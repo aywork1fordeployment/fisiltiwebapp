@@ -1,3 +1,4 @@
+const http = require('http');
 const WebSocket = require('ws');
 const WebSocketServer = WebSocket.Server || WebSocket.WebSocketServer;
 
@@ -6,13 +7,21 @@ const MAX_CLIENTS = 1000;
 const MAX_QUEUE_SIZE = 200;
 
 // ==============================================================
-// 1. DOŞ / RAM KORUMASI: maxPayload 16 KB (DoS Kalkanı)
+// 1. RENDER HTTP HEALTH CHECK & DOŞ / RAM KORUMASI: maxPayload 16 KB
 // ==============================================================
+const server = http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end('Fisilti WS Active');
+});
+
 const wss = new WebSocketServer({
-  port: PORT,
+  server,
   maxPayload: 16 * 1024 // 16 KB max WebSocket paket boyutu
 });
-console.log(`🚀 Fısıltı Mahkeme Salonu WebSocket Sunucusu ws://localhost:${PORT} üzerinde çalışıyor...`);
+
+server.listen(PORT, () => {
+  console.log(`🚀 Fısıltı Mahkeme Salonu WebSocket Sunucusu ws://localhost:${PORT} üzerinde çalışıyor...`);
+});
 
 wss.on('error', (err) => {
   console.error('WebSocket Server Hatası:', err);
