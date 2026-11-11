@@ -1,13 +1,111 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #090A0F;
+    color: #F3F4F6;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    overflow: hidden;
+    user-select: none;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* İnce Minimal Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Damga İnişi (Stamp Slam) */
+@keyframes stamp-slam-anim {
+  0% { transform: scale(2.4) rotate(-22deg); opacity: 0; }
+  70% { transform: scale(0.95) rotate(-5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-6deg); opacity: 1; }
+}
+
+.animate-stamp-slam {
+  animation: stamp-slam-anim 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Lamba Sallanması */
+@keyframes pendulum-anim {
+  0%, 100% { transform: rotate(-3.5deg); }
+  50% { transform: rotate(3.5deg); }
+}
+
+.animate-pendulum {
+  animation: pendulum-anim 4s ease-in-out infinite;
+}
+
+@keyframes pendulum-wild-anim {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+.animate-pendulum-wild {
+  animation: pendulum-wild-anim 1s ease-in-out infinite;
+}
+
+/* Katip Daktilo Parmak Hareketi (Sadece Eller) */
+@keyframes typewriterHandsAnim {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-2px, -1px); }
+  50% { transform: translate(1px, -1.5px); }
+  75% { transform: translate(2px, 0.5px); }
+}
+
+.animate-typewriter-hands {
+  animation: typewriterHandsAnim 0.12s ease-in-out infinite;
+}
+
+/* Hakim Tokmak İnişi (Tek Seferlik Sert Vuruş) */
+@keyframes gavelStrikeAnim {
+  0% { transform: rotate(0deg); }
+  30% { transform: rotate(-40deg) translate(-4px, -12px); }
+  70% { transform: rotate(18deg) translate(2px, 6px); }
+  100% { transform: rotate(0deg) translate(0, 0); }
+}
+
+.animate-gavel-strike {
+  animation: gavelStrikeAnim 0.35s cubic-bezier(0.22, 1, 0.36, 1) 1 forwards;
+  transform-origin: 220px 170px;
+}
+
+/* Karakter Ağız Konuşma Hareketi (Lip-Sync) */
+@keyframes mouthSpeakAnim {
+  0%, 100% { transform: scaleY(0.35); opacity: 0.7; }
+  50% { transform: scaleY(1.35); opacity: 1; }
+}
+
+.animate-mouth-speak {
+  animation: mouthSpeakAnim 0.18s ease-in-out infinite;
+  transform-origin: center;
 }
