@@ -9,6 +9,7 @@ interface LandingHeroProps {
   waitingRole?: 'suspect' | 'judge';
   queueCounts?: { suspects: number; judges: number };
   onCancelQueue?: () => void;
+  onForceStart1v1?: () => void;
   onResetStorage?: () => void;
 }
 
@@ -19,6 +20,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   waitingRole = 'judge',
   queueCounts = { suspects: 0, judges: 0 },
   onCancelQueue,
+  onForceStart1v1,
   onResetStorage,
 }) => {
   const [roomCodeInput, setRoomCodeInput] = useState('');
@@ -31,6 +33,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
 
   const suspectCount = queueCounts.suspects;
   const judgeCount = queueCounts.judges;
+  const canForceStart1v1 = suspectCount >= 1 && judgeCount === 1;
 
   let statusMessage = '';
   if (suspectCount === 0 && judgeCount < 2) {
@@ -40,7 +43,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   } else if (judgeCount === 0) {
     statusMessage = '2 Hakim bekleniyor...';
   } else if (judgeCount === 1) {
-    statusMessage = 'Son 1 Hakim bekleniyor...';
+    statusMessage = 'Son 1 Hakim bekleniyor (İsterseniz hemen başlatabilirsiniz!)';
   } else {
     statusMessage = 'Duruşma Başlatılıyor...';
   }
@@ -83,14 +86,14 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
 
       {/* CANLI BEKLEME ODASI (1 Şüpheli + 2 Hakim FIFO Kuyruğu) */}
       {isWaitingInQueue ? (
-        <div className="w-full bg-[#18120F] border border-amber-500/40 rounded-2xl p-6 flex flex-col items-center gap-3.5 shadow-2xl animate-pulse">
+        <div className="w-full bg-[#18120F] border border-amber-500/40 rounded-2xl p-6 flex flex-col items-center gap-3.5 shadow-2xl">
           <div className="w-12 h-12 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
             <Loader2 className="w-6 h-6 animate-spin" />
           </div>
 
           <div>
             <h3 className="font-bold text-base text-stone-100">
-              Mahkeme Heyeti Toplanıyor...
+              {canForceStart1v1 ? '1 Şüpheli & 1 Hakim Hazır!' : 'Mahkeme Heyeti Toplanıyor...'}
             </h3>
             <p className="text-xs font-semibold text-amber-400 mt-1">
               {waitingRole === 'suspect' ? 'Sanık Kürsüsüne Geçtin' : 'Hakim Kürsüsüne Katıldın'}
@@ -116,8 +119,20 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             </p>
           </div>
 
+          {/* Şüpheli (1/1) ve Hakim (1/2) olduğunda hem Şüpheli hem Hakim için çıkan "Mahkemeye Başla" butonu */}
+          {canForceStart1v1 && onForceStart1v1 && (
+            <button
+              onClick={onForceStart1v1}
+              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-extrabold text-xs sm:text-sm tracking-wide shadow-[0_0_20px_rgba(245,158,11,0.35)] flex items-center justify-center gap-2 transition-all active:scale-95"
+            >
+              <Scale className="w-4 h-4 shrink-0 stroke-[2.5]" />
+              <span>Mahkemeye Başla (1 Hakimle Başlat)</span>
+              <ArrowRight className="w-4 h-4 shrink-0 stroke-[2.5]" />
+            </button>
+          )}
+
           <p className="text-[11px] text-stone-500 leading-snug">
-            💡 <em>İpucu: Test etmek için hemen yan sekmelerde yeni pencereler açıp kalan koltukları doldurabilirsiniz!</em>
+            💡 <em>İpucu: 2. Hakim katıldığında duruşma otomatik başlar veya yukarıdaki butonla hemen 1v1 başlatabilirsiniz!</em>
           </p>
 
           {onCancelQueue && (

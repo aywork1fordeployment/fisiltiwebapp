@@ -200,110 +200,120 @@ function broadcastToRoom(room, payload) {
   });
 }
 
+function createMatchRoom(suspect, sertHakim, yumusakHakim = null) {
+  const roomId = Math.floor(100 + Math.random() * 900).toString();
+  const judgeCountInRoom = yumusakHakim ? 2 : 1;
+
+  const room = {
+    roomId,
+    confession: suspect.confession || 'İş yerinde terfi almak için arkadaşımın projesini kendim yaptım dedim.',
+    category: suspect.category || 'İş & Para',
+    timeLeft: 180,
+    status: 'active',
+    verdict: null,
+    messages: [
+      {
+        id: 'sys_start_' + Date.now(),
+        sender: 'system',
+        text: `🚨 ANONİM SORGU SALONU #${roomId} AÇILDI. Süre 180 saniye. 1 Şüpheli ve ${judgeCountInRoom} Hakim salona girdi.`,
+        time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+      },
+      {
+        id: 'conf_' + Date.now(),
+        sender: 'supheli',
+        text: `📂 GİZLİ İTİRAF DOSYASI: "${suspect.confession || 'İş yerinde terfi almak için arkadaşımın projesini kendim yaptım dedim.'}"`,
+        time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+      }
+    ],
+    whispers: [],
+    isWhispering: false,
+    activePenalty: null,
+    penaltyCooldowns: { mute: 0, eh: 0, timer5: 0 },
+    clients: {
+      supheli: suspect.ws,
+      sert_hakim: sertHakim.ws,
+      yumusak_hakim: yumusakHakim ? yumusakHakim.ws : null,
+      savci: sertHakim.ws,
+      dedektif: yumusakHakim ? yumusakHakim.ws : null
+    },
+    timer: null
+  };
+
+  suspect.ws.roomId = roomId; suspect.ws.role = 'supheli';
+  sertHakim.ws.roomId = roomId; sertHakim.ws.role = 'sert_hakim';
+  if (yumusakHakim) {
+    yumusakHakim.ws.roomId = roomId;
+    yumusakHakim.ws.role = 'yumusak_hakim';
+  }
+
+  // Odaya girildi, boşta bekleme zaman aşımını iptal et
+  if (suspect.ws.idleTimeout) clearTimeout(suspect.ws.idleTimeout);
+  if (sertHakim.ws.idleTimeout) clearTimeout(sertHakim.ws.idleTimeout);
+  if (yumusakHakim && yumusakHakim.ws.idleTimeout) clearTimeout(yumusakHakim.ws.idleTimeout);
+
+  rooms.set(roomId, room);
+
+  // Eşleşme başladığında da şüpheliye fısıltı içeriği ASLA sızdırılmaz
+  const suspectRoomInfo = {
+    roomId: room.roomId,
+    confession: room.confession,
+    category: room.category,
+    timeLeft: room.timeLeft,
+    status: room.status,
+    verdict: room.verdict,
+    messages: room.messages,
+    whispers: [],
+    whisperCount: 0,
+    isWhispering: room.isWhispering,
+    activePenalty: room.activePenalty
+  };
+
+  const judgeRoomInfo = {
+    ...suspectRoomInfo,
+    whispers: room.whispers,
+    whisperCount: 0
+  };
+
+  // CİHAZLARA AYNI ANDA ODAYA GİRİŞ EMRİ GÖNDER!
+  send(suspect.ws, { type: 'MATCH_FOUND', role: 'supheli', room: suspectRoomInfo });
+  send(sertHakim.ws, { type: 'MATCH_FOUND', role: 'sert_hakim', room: judgeRoomInfo });
+  if (yumusakHakim) {
+    send(yumusakHakim.ws, { type: 'MATCH_FOUND', role: 'yumusak_hakim', room: judgeRoomInfo });
+  }
+
+  // Sunucu bazlı ortak geri sayım sayacı (180 saniye)
+  room.timer = setInterval(() => {
+    if (room.status !== 'active') {
+      clearInterval(room.timer);
+      return;
+    }
+    room.timeLeft -= 1;
+    if (room.activePenalty && room.activePenalty.expiresAt <= Date.now()) {
+      room.activePenalty = null;
+    }
+    if (room.timeLeft <= 0) {
+      room.timeLeft = 0;
+      room.status = 'ended';
+      room.verdict = room.verdict || {
+        stamp: 'SÜRE DOLDU - KARARSIZ',
+        reason: 'Hakimler 180 saniyelik süre içinde nihai ortak hükme varamadı.',
+        by: 'system'
+      };
+      clearInterval(room.timer);
+      broadcastRoom(room);
+      scheduleRoomCleanup(room.roomId);
+    } else {
+      broadcastRoom(room);
+    }
+  }, 1000);
+}
+
 function tryMatchmaking() {
   while (suspectQueue.length >= 1 && judgeQueue.length >= 2) {
     const suspect = suspectQueue.shift();
     const sertHakim = judgeQueue.shift();
     const yumusakHakim = judgeQueue.shift();
-
-    const roomId = Math.floor(100 + Math.random() * 900).toString();
-    const room = {
-      roomId,
-      confession: suspect.confession || 'İş yerinde terfi almak için arkadaşımın projesini kendim yaptım dedim.',
-      category: suspect.category || 'İş & Para',
-      timeLeft: 180,
-      status: 'active',
-      verdict: null,
-      messages: [
-        {
-          id: 'sys_start_' + Date.now(),
-          sender: 'system',
-          text: `🚨 ANONİM SORGU SALONU #${roomId} AÇILDI. Süre 180 saniye. 1 Şüpheli ve 2 Hakim salona girdi.`,
-          time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
-        },
-        {
-          id: 'conf_' + Date.now(),
-          sender: 'supheli',
-          text: `📂 GİZLİ İTİRAF DOSYASI: "${suspect.confession || 'İş yerinde terfi almak için arkadaşımın projesini kendim yaptım dedim.'}"`,
-          time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
-        }
-      ],
-      whispers: [],
-      isWhispering: false,
-      activePenalty: null,
-      penaltyCooldowns: { mute: 0, eh: 0, timer5: 0 },
-      clients: {
-        supheli: suspect.ws,
-        sert_hakim: sertHakim.ws,
-        yumusak_hakim: yumusakHakim.ws,
-        savci: sertHakim.ws,
-        dedektif: yumusakHakim.ws
-      },
-      timer: null
-    };
-
-    suspect.ws.roomId = roomId; suspect.ws.role = 'supheli';
-    sertHakim.ws.roomId = roomId; sertHakim.ws.role = 'sert_hakim';
-    yumusakHakim.ws.roomId = roomId; yumusakHakim.ws.role = 'yumusak_hakim';
-
-    // Odaya girildi, boşta bekleme zaman aşımını iptal et
-    if (suspect.ws.idleTimeout) clearTimeout(suspect.ws.idleTimeout);
-    if (sertHakim.ws.idleTimeout) clearTimeout(sertHakim.ws.idleTimeout);
-    if (yumusakHakim.ws.idleTimeout) clearTimeout(yumusakHakim.ws.idleTimeout);
-
-    rooms.set(roomId, room);
-
-    // Eşleşme başladığında da şüpheliye fısıltı içeriği ASLA sızdırılmaz
-    const suspectRoomInfo = {
-      roomId: room.roomId,
-      confession: room.confession,
-      category: room.category,
-      timeLeft: room.timeLeft,
-      status: room.status,
-      verdict: room.verdict,
-      messages: room.messages,
-      whispers: [],
-      whisperCount: 0,
-      isWhispering: room.isWhispering,
-      activePenalty: room.activePenalty
-    };
-
-    const judgeRoomInfo = {
-      ...suspectRoomInfo,
-      whispers: room.whispers,
-      whisperCount: 0
-    };
-
-    // 3 CİHAZA AYNI ANDA ODAYA GİRİŞ EMRİ GÖNDER!
-    send(suspect.ws, { type: 'MATCH_FOUND', role: 'supheli', room: suspectRoomInfo });
-    send(sertHakim.ws, { type: 'MATCH_FOUND', role: 'sert_hakim', room: judgeRoomInfo });
-    send(yumusakHakim.ws, { type: 'MATCH_FOUND', role: 'yumusak_hakim', room: judgeRoomInfo });
-
-    // Sunucu bazlı ortak geri sayım sayacı (180 saniye)
-    room.timer = setInterval(() => {
-      if (room.status !== 'active') {
-        clearInterval(room.timer);
-        return;
-      }
-      room.timeLeft -= 1;
-      if (room.activePenalty && room.activePenalty.expiresAt <= Date.now()) {
-        room.activePenalty = null;
-      }
-      if (room.timeLeft <= 0) {
-        room.timeLeft = 0;
-        room.status = 'ended';
-        room.verdict = room.verdict || {
-          stamp: 'SÜRE DOLDU - KARARSIZ',
-          reason: 'Hakimler 180 saniyelik süre içinde nihai ortak hükme varamadı.',
-          by: 'system'
-        };
-        clearInterval(room.timer);
-        broadcastRoom(room);
-        scheduleRoomCleanup(room.roomId);
-      } else {
-        broadcastRoom(room);
-      }
-    }, 1000);
+    createMatchRoom(suspect, sertHakim, yumusakHakim);
   }
   broadcastQueueStatus();
 }
@@ -414,6 +424,20 @@ wss.on('connection', (ws, req) => {
 
     if (msg.type === 'LEAVE_QUEUE') {
       removeFromQueues(ws);
+      return;
+    }
+
+    // 1 Şüpheli (1/1) ve 1 Hakim (1/2) hazır olduğunda 2. Hakimi beklemeden duruşmayı başlatma seçeneği
+    if (msg.type === 'FORCE_START_1V1') {
+      const isWaitingSuspect = suspectQueue.some(i => i.ws === ws);
+      const isWaitingJudge = judgeQueue.some(i => i.ws === ws);
+
+      if ((isWaitingSuspect || isWaitingJudge) && suspectQueue.length >= 1 && judgeQueue.length >= 1) {
+        const suspect = suspectQueue.shift();
+        const sertHakim = judgeQueue.shift();
+        createMatchRoom(suspect, sertHakim, null);
+        broadcastQueueStatus();
+      }
       return;
     }
 

@@ -219,6 +219,10 @@ class FsWebSocketClient {
     this.send({ type: 'LEAVE_QUEUE' });
   }
 
+  public forceStart1v1() {
+    this.send({ type: 'FORCE_START_1V1' });
+  }
+
   public sendTypingStatus(isTyping: boolean) {
     this.send({ type: 'TYPING_STATUS', isTyping });
   }

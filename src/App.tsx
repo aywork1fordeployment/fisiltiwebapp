@@ -289,6 +289,10 @@ export const App: React.FC = () => {
     setPhase('lobby');
   };
 
+  const handleForceStart1v1 = () => {
+    wsClient.forceStart1v1();
+  };
+
   const handleResetStorage = () => {
     wsClient.leaveQueue();
     setPhase('lobby');
@@ -387,6 +391,7 @@ export const App: React.FC = () => {
                 waitingRole={waitingRole}
                 queueCounts={queueCounts}
                 onCancelQueue={handleCancelQueue}
+                onForceStart1v1={handleForceStart1v1}
                 onResetStorage={handleResetStorage}
               />
             )}
