@@ -236,9 +236,9 @@ export const JudgePovCourtroom: React.FC<JudgePovCourtroomProps> = ({
           </g>
         </svg>
 
-        {/* [ • ŞÜPHELİ ] HUD Rozeti (Reticle'ın Sağında, Yüzü Asla Kapatmaz) */}
+        {/* [ • HEDEF: ŞÜPHELİ ] HUD Rozeti (Reticle'ın Sağında, Yüzü Asla Kapatmaz) */}
         <div className="absolute top-[48px] sm:top-[68px] left-[calc(50%+36px)] sm:left-[calc(50%+46px)] pointer-events-none">
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] sm:text-xs font-bold tracking-widest uppercase shadow-lg backdrop-blur-md whitespace-nowrap transition-all duration-300 ${
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[10.5px] sm:text-xs font-bold tracking-wider uppercase shadow-lg backdrop-blur-md whitespace-nowrap transition-all duration-300 ${
             isSuspectTalking
               ? 'bg-amber-950/90 border border-amber-400 text-amber-200 ring-2 ring-amber-400/40 shadow-[0_0_15px_rgba(251,191,36,0.35)]'
               : 'bg-black/75 border border-amber-400/40 text-amber-200/90'
@@ -246,26 +246,26 @@ export const JudgePovCourtroom: React.FC<JudgePovCourtroomProps> = ({
             <span className={`w-2 h-2 rounded-full shrink-0 ${
               isSuspectTalking ? 'bg-amber-400 animate-ping' : 'bg-amber-500'
             }`} />
-            <span>ŞÜPHELİ</span>
+            <span>SANIK: ŞÜPHELİ</span>
           </div>
         </div>
 
-        {/* Susturuldu / Kıskaç / Tereddüt Sayaç Bildirimi */}
+        {/* Hakimler İçin Bilgi Rozeti: Şüpheliye Uygulanan Cezanın Durumu */}
         {isSilenced && (
-          <div className="absolute bottom-6 sm:bottom-14 left-1/2 -translate-x-1/2 bg-rose-950/90 border border-rose-500 text-rose-200 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap flex items-center gap-1.5 shadow-[0_0_20px_rgba(225,29,72,0.4)] animate-bounce">
-            <span>🔒 Şüpheli Susturuldu (Klavye Kilitli)</span>
+          <div className="absolute bottom-6 sm:bottom-14 left-1/2 -translate-x-1/2 bg-rose-950/90 border border-rose-500 text-rose-200 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap flex items-center gap-1.5 shadow-[0_0_20px_rgba(225,29,72,0.4)] pointer-events-none">
+            <span>🔒 Şüpheli Susturuldu (Klavyesi Kilitli)</span>
           </div>
         )}
 
         {isYesNoClamp && (
-          <div className="absolute bottom-6 sm:bottom-14 left-1/2 -translate-x-1/2 bg-amber-950/90 border border-amber-500 text-amber-200 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.4)] animate-bounce">
-            <span>⚖️ Tek Kelime Kıskacı (Evet / Hayır)</span>
+          <div className="absolute bottom-6 sm:bottom-14 left-1/2 -translate-x-1/2 bg-amber-950/90 border border-amber-500 text-amber-200 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.4)] pointer-events-none">
+            <span>⚖️ Şüpheliye Evet/Hayır Kıskacı Uygulandı (Cevap Bekleniyor...)</span>
           </div>
         )}
 
         {isTimerClamp && timerSeconds !== undefined && timerSeconds > 0 && (
-          <div className="absolute bottom-6 sm:bottom-14 left-1/2 -translate-x-1/2 bg-orange-950/90 border border-orange-500 text-orange-200 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap flex items-center gap-1.5 shadow-[0_0_20px_rgba(249,115,22,0.4)] animate-pulse">
-            <span>⏱️ 5 Sn Tereddüt Baskısı: {timerSeconds}s</span>
+          <div className="absolute bottom-6 sm:bottom-14 left-1/2 -translate-x-1/2 bg-orange-950/90 border border-orange-500 text-orange-200 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap flex items-center gap-1.5 shadow-[0_0_20px_rgba(249,115,22,0.4)] animate-pulse pointer-events-none">
+            <span>⏱️ Şüpheliye 5 Sn Baskı Uygulandı ({timerSeconds}s)</span>
           </div>
         )}
 

@@ -40,7 +40,14 @@ export const CaseFileReceipt: React.FC<CaseFileReceiptProps> = ({
 
   // En çarpıcı ana sorgu mesajları (ilk 4 tanesi)
   const mainHighlights = messages
-    .filter(m => m.channel === 'main' && m.senderRole !== 'system' && !m.content.includes('İTİRAF / İDDİA DOSYASI'))
+    .filter(
+      (m) =>
+        m.channel === 'main' &&
+        m.senderRole !== 'system' &&
+        m.senderRole !== 'katip' &&
+        !m.content.includes('İTİRAF / İDDİA DOSYASI') &&
+        !m.content.includes('GİZLİ İTİRAF DOSYASI')
+    )
     .slice(-4);
 
   // En çarpıcı gizli fısıltılar (sağ sütun için)
@@ -74,14 +81,14 @@ Hüküm: [${verdict}] ⚖️
 "Aynanın arkasında hakkımda konuştukları gizli fısıltıları gördüm..."
 
 Sen olsan ne karar verirdin? Odaya gir:
-https://fisilti.vercel.app`;
+https://fisilticourt.vercel.app`;
 
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
     window.open(url, '_blank');
   };
 
   const handleCopyShare = () => {
-    const text = `🕵️‍♂️ FISILTI: AYNALI SORGU ODASI — #${roomCode} Dava Dosyası: ${verdict}!\nhttps://fisilti.vercel.app`;
+    const text = `🕵️‍♂️ FISILTI: AYNALI SORGU ODASI — #${roomCode} Dava Dosyası: ${verdict}!\nhttps://fisilticourt.vercel.app`;
     navigator.clipboard?.writeText(text);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -159,16 +166,20 @@ https://fisilti.vercel.app`;
             {mainHighlights.length === 0 ? (
               <p className="text-[10px] text-stone-600 italic">Kayıt yok.</p>
             ) : (
-              mainHighlights.map((m, idx) => (
-                <div key={idx} className="leading-snug">
-                  <span className={`text-[10px] font-semibold ${
-                    m.senderRole === 'suspect' ? 'text-amber-400' : 'text-rose-400'
-                  }`}>
-                    {m.senderRole === 'suspect' ? 'Şüpheli: ' : 'Yargıç: '}
-                  </span>
-                  <span className="text-[11px] text-stone-300">{m.content}</span>
-                </div>
-              ))
+              mainHighlights.map((m, idx) => {
+                const isSusp = m.senderRole === 'supheli' || m.senderRole === 'suspect';
+                const isFirstJudge = m.senderRole === 'sert_hakim' || m.senderRole === 'prosecutor';
+                return (
+                  <div key={idx} className="leading-snug">
+                    <span className={`text-[10px] font-semibold ${
+                      isSusp ? 'text-amber-400' : 'text-rose-400'
+                    }`}>
+                      {isSusp ? 'Şüpheli: ' : isFirstJudge ? '1. Hakim: ' : '2. Hakim: '}
+                    </span>
+                    <span className="text-[11px] text-stone-300">{m.content}</span>
+                  </div>
+                );
+              })
             )}
           </div>
 
@@ -210,7 +221,7 @@ https://fisilti.vercel.app`;
           {/* En Alttaki Viral Call-To-Action */}
           <div className="w-full pt-2 border-t border-dashed border-white/10 flex items-center justify-between text-[10px] text-stone-500">
             <span>🕵️‍♂️ Sen olsan ne karar verirdin?</span>
-            <span className="text-amber-400 font-bold">fisilti.vercel.app</span>
+            <span className="text-amber-400 font-bold">fisilticourt.vercel.app</span>
           </div>
 
           {/* Kurgusal Oyun İbaresi */}

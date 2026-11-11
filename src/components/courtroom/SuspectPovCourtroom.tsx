@@ -8,6 +8,11 @@ interface SuspectPovCourtroomProps {
   isKatipTyping: boolean;
   prosecutorState?: 'idle' | 'slam' | 'point' | 'whisper';
   statusText?: string | null;
+  isSilenced?: boolean;
+  silencedSeconds?: number;
+  isYesNoClamp?: boolean;
+  isTimerClamp?: boolean;
+  timerSeconds?: number;
 }
 
 export const SuspectPovCourtroom: React.FC<SuspectPovCourtroomProps> = ({
@@ -17,6 +22,11 @@ export const SuspectPovCourtroom: React.FC<SuspectPovCourtroomProps> = ({
   isKatipTyping,
   prosecutorState = 'idle',
   statusText,
+  isSilenced = false,
+  silencedSeconds = 0,
+  isYesNoClamp = false,
+  isTimerClamp = false,
+  timerSeconds = 0,
 }) => {
   const isSertHakimTalking = speakingRole === 'sert_hakim' || activeSpeaker === 'sert_hakim';
   const isYumusakHakimTalking = speakingRole === 'yumusak_hakim' || activeSpeaker === 'yumusak_hakim';
@@ -440,6 +450,25 @@ export const SuspectPovCourtroom: React.FC<SuspectPovCourtroomProps> = ({
             <span className="font-extrabold text-[10px] sm:text-[11px] tracking-wider uppercase">2. HAKİM</span>
           </div>
         </div>
+
+        {/* Şüpheliye Uygulanan Ceza Uyarıları (Sahne Üzerinde) */}
+        {isSilenced && (
+          <div className="absolute bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 bg-rose-950/95 border border-rose-500 text-rose-100 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 shadow-[0_0_25px_rgba(225,29,72,0.5)] animate-bounce z-30">
+            <span>🔨 SUSTURULDUN! Klavyen Kilitli ({silencedSeconds}s)</span>
+          </div>
+        )}
+
+        {isYesNoClamp && (
+          <div className="absolute bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 bg-amber-950/95 border border-amber-400 text-amber-100 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 shadow-[0_0_25px_rgba(245,158,11,0.5)] animate-bounce z-30">
+            <span>⚖️ TEK KELİME KISKACI! Aşağıdan EVET / HAYIR Seç!</span>
+          </div>
+        )}
+
+        {isTimerClamp && timerSeconds > 0 && (
+          <div className="absolute bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 bg-orange-950/95 border border-orange-500 text-orange-100 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold whitespace-nowrap flex items-center gap-1.5 shadow-[0_0_25px_rgba(249,115,22,0.5)] animate-pulse z-30">
+            <span>⏱️ TEREDDÜT BASKISI: {timerSeconds}s İçinde Cevap Ver!</span>
+          </div>
+        )}
 
       </div>
 

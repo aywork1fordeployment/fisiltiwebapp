@@ -151,8 +151,8 @@ export const WhisperDrawer: React.FC<WhisperDrawerProps> = ({
           </div>
         )}
 
-        {/* Hızlı Taktik Çipleri ve Mesaj Gönderme (Sadece Hakimler İçin) */}
-        {!isLockedForSuspect && (
+        {/* Hızlı Taktik Çipleri ve Mesaj Gönderme (SADECE HAKİMLER İÇİN — Şüpheli Asla Göremez!) */}
+        {!isSuspect && (
           <div className="p-3 border-t border-amber-500/20 bg-[#17110E] flex flex-col gap-2">
             {/* Hızlı Taktik Butonları */}
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">

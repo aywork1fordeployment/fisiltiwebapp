@@ -149,6 +149,9 @@ export const App: React.FC = () => {
 
     // Oda Güncellemesi
     wsClient.onRoomUpdate((room: ServerRoom) => {
+      if (room.role) {
+        setUserRole(serverRoleToPlayerRole(room.role));
+      }
       setTimeLeft(room.timeLeft);
       setIsWhispering(room.isWhispering);
 
@@ -272,6 +275,7 @@ export const App: React.FC = () => {
    */
   const handleStartQueue = (roleType: 'suspect' | 'judge', userConf?: string, cat?: string) => {
     setWaitingRole(roleType);
+    setUserRole(roleType === 'suspect' ? 'supheli' : 'sert_hakim');
     setPhase('waiting');
 
     const activeConf = userConf || 'İş yerinde terfi almak için arkadaşımın projesini kendim yaptım dedim.';
@@ -318,6 +322,7 @@ export const App: React.FC = () => {
   };
 
   const handleSendWhisper = (text: string) => {
+    if (userRole === 'supheli' || userRole === 'suspect') return;
     const clean = filterMessage(text);
     if (!clean) return;
     wsClient.sendWhisperMessage(clean);
@@ -327,27 +332,35 @@ export const App: React.FC = () => {
     wsClient.sendTypingStatus(isTyping);
   };
 
-  // Otorite Aksiyonları
+  // Otorite Aksiyonları (SADECE HAKİMLER!)
   const handleSlam = () => {
+    if (userRole === 'supheli' || userRole === 'suspect') return;
     setCooldowns((prev) => ({ ...prev, slam: 25 }));
-    wsClient.applyPenalty('mute', 7, '🔨 [1. HAKİM TOKMAĞI VURDU! Şüpheli 7 saniye susturuldu.]');
+    const judgeLabel = userRole === 'yumusak_hakim' ? '2. HAKİM' : '1. HAKİM';
+    wsClient.applyPenalty('mute', 7, `🔨 [${judgeLabel} TOKMAĞI VURDU! Şüpheli 7 saniye susturuldu.]`);
   };
 
   const handleYesNo = () => {
+    if (userRole === 'supheli' || userRole === 'suspect') return;
     setCooldowns((prev) => ({ ...prev, yesNo: 20 }));
-    wsClient.applyPenalty('eh', 15, '⚖️ [HAKİM TEK KELİME KISKACI UYGULADI! Şüpheli sadece Evet veya Hayır diyebilir.]');
+    const judgeLabel = userRole === 'yumusak_hakim' ? '2. HAKİM' : '1. HAKİM';
+    wsClient.applyPenalty('eh', 15, `⚖️ [${judgeLabel} TEK KELİME KISKACI UYGULADI! Şüpheli sadece Evet veya Hayır diyebilir.]`);
   };
 
   const handleTimer = () => {
+    if (userRole === 'supheli' || userRole === 'suspect') return;
     setCooldowns((prev) => ({ ...prev, timer: 15 }));
-    wsClient.applyPenalty('timer5', 5, '⏱️ [5 SANİYE BASKISI UYGULANDI! Şüpheli hemen cevap vermelidir.]');
+    const judgeLabel = userRole === 'yumusak_hakim' ? '2. HAKİM' : '1. HAKİM';
+    wsClient.applyPenalty('timer5', 5, `⏱️ [${judgeLabel} 5 SANİYE BASKISI UYGULADI! Şüpheli hemen cevap vermelidir.]`);
   };
 
   const handleEarlyVerdict = () => {
+    if (userRole === 'supheli' || userRole === 'suspect') return;
     setPhase('verdict');
   };
 
   const handleDecideVerdict = (verdict: VerdictType, reason: string) => {
+    if (userRole === 'supheli' || userRole === 'suspect') return;
     wsClient.submitVerdict(verdict, reason);
   };
 
@@ -424,6 +437,11 @@ export const App: React.FC = () => {
                   isKatipTyping={isKatipTyping}
                   prosecutorState={prosecutorState}
                   statusText={statusText}
+                  isSilenced={isSilenced}
+                  silencedSeconds={silencedSeconds}
+                  isYesNoClamp={isYesNoClamp}
+                  isTimerClamp={isTimerClamp}
+                  timerSeconds={timerSeconds}
                 />
               ) : (
                 /* HAKİMLER EKRANI: Spot Işığı, Sanık Kürsüsü, Mikrofon, Şüpheli (sample.jpg Sağ) */
@@ -474,6 +492,7 @@ export const App: React.FC = () => {
               isOpen={phase === 'verdict'}
               userRole={userRole}
               onDecideVerdict={handleDecideVerdict}
+              onClose={() => setPhase('interrogation')}
             />
           </div>
         )}

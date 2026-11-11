@@ -48,6 +48,21 @@ export const CourtroomBottomSheet: React.FC<CourtroomBottomSheetProps> = ({
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isJudge = userRole === 'sert_hakim' || userRole === 'yumusak_hakim' || userRole === 'prosecutor' || userRole === 'detective';
+  const isSuspectSilenced = !isJudge && isSilenced;
+
+  const JUDGE_QUICK_QUESTIONS = [
+    { label: '❓ Neden yalan söyledin?', text: 'Neden yalan söyledin? Gözlerimin içine bakarak doğruyu söyle!' },
+    { label: '🔍 Kanıtın var mı?', text: 'Bu anlattıklarını doğrulayacak tek bir somut kanıtın var mı?' },
+    { label: '⚡ Çelişiyorsun!', text: 'Az önce söylediğinle şu anki ifaden tamamen birbiriyle çelişiyor!' },
+    { label: '⚖️ Son şansın!', text: 'Mahkeme heyetini kandıramazsın, gerçeği itiraf etmen için bu son şansın!' },
+  ];
+
+  const SUSPECT_QUICK_DEFENSES = [
+    { label: '✋ İtirazım Var!', text: '✋ İtiraz ediyorum! Sorularınız tamamen önyargılı, savunmamı dinlemiyorsunuz!' },
+    { label: '😇 Masumum!', text: '😇 Yemin ederim kötü bir niyetim yoktu, şartlar beni buna mecbur bıraktı!' },
+    { label: '🔍 Kanıt Nerede?', text: '🔍 Neye dayanarak beni suçluyorsunuz? Elinizde somut bir kanıt var mı?' },
+    { label: '🙏 İnsaf Edin!', text: '🙏 Hatamı kabul ediyorum ama yerimde kim olsa aynı şeyi yapardı, insaf edin!' },
+  ];
 
   // Sadece ana tutanak mesajlarını filtrele (fısıltılar ve üstte sabitlenen itiraf hariç)
   const transcriptMessages = messages.filter(
@@ -62,12 +77,12 @@ export const CourtroomBottomSheet: React.FC<CourtroomBottomSheetProps> = ({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [transcriptMessages.length, isKatipTyping]);
 
-  // Susturulduğunda inputu temizle
+  // Sadece şüpheli susturulduğunda inputu temizle (Hakimlerin klavyesi asla kilitlenmez!)
   useEffect(() => {
-    if (isSilenced) {
+    if (isSuspectSilenced) {
       setInputText('');
     }
-  }, [isSilenced]);
+  }, [isSuspectSilenced]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
@@ -82,14 +97,19 @@ export const CourtroomBottomSheet: React.FC<CourtroomBottomSheetProps> = ({
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (isSilenced || !inputText.trim()) return;
+    if (isSuspectSilenced || !inputText.trim()) return;
     onSendMessage(inputText.trim());
     setInputText('');
     if (onTyping) onTyping(false);
   };
 
   const handleYesNoSubmit = (choice: 'EVET' | 'HAYIR') => {
-    onSendMessage(`[${choice}]`);
+    onSendMessage(choice);
+  };
+
+  const handleQuickAction = (text: string) => {
+    if (isSuspectSilenced) return;
+    onSendMessage(text);
   };
 
   const cycleHeightMode = () => {
@@ -239,123 +259,180 @@ export const CourtroomBottomSheet: React.FC<CourtroomBottomSheetProps> = ({
         <div ref={bottomRef} />
       </div>
 
-      {/* 4. ALT KONTROLLER VE BUTONLAR */}
+      {/* 4. ALT KONTROLLER VE BUTONLAR (HAKİMLER VE ŞÜPHELİ İÇİN TAMAMEN FARKLI YETKİ & KISA BUTONLAR) */}
       <div className="shrink-0 bg-[#0F0D0B] border-t border-amber-900/30 flex flex-col p-2 sm:p-2.5 gap-2">
         
         {/* ============================================================== */}
-        {/* A. 4 OTORİTE BUTONU (MOBİLDE TAŞMAYAN SİMETRİK 3 SATIR KART)   */}
+        {/* A. SADECE HAKİMLER: 4 OTORİTE BUTONU + HIZLI SORGU ÇİPLERİ     */}
         {/* ============================================================== */}
         {isJudge && (
-          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 select-none">
-            {/* 1. 🔨 [7s] SUSTUR */}
-            <button
-              onClick={onSlam}
-              disabled={cooldowns.slam > 0}
-              className={`h-[56px] sm:h-[60px] px-1 py-1.5 rounded-xl border flex flex-col items-center justify-between overflow-hidden transition-all active:scale-95 ${
-                cooldowns.slam > 0
-                  ? 'bg-[#181112]/60 border-rose-900/20 text-stone-600 cursor-not-allowed'
-                  : 'bg-gradient-to-b from-[#2A1215] to-[#1A0B0D] hover:from-[#3D181C] border-rose-500/40 hover:border-rose-400 text-rose-100 shadow-inner'
-              }`}
-              title="Masaya vur ve şüphelinin klavyesini 7 saniye kilitle"
-            >
-              <div className="flex items-center justify-center gap-1 leading-none">
-                <span className="text-[11px] sm:text-xs">🔨</span>
-                <span className="text-rose-400 text-[9px] font-mono font-bold">[7s]</span>
-              </div>
-              <span className="text-[10.5px] sm:text-xs font-extrabold tracking-tight whitespace-nowrap leading-none">
-                SUSTUR
-              </span>
-              <span className="text-[8.5px] sm:text-[9px] text-rose-300/75 font-medium whitespace-nowrap leading-none">
-                {cooldowns.slam > 0 ? `Bekle: ${cooldowns.slam}s` : 'Klavye Kilidi'}
-              </span>
-            </button>
+          <>
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2 select-none">
+              {/* 1. 🔨 [7s] SUSTUR */}
+              <button
+                onClick={onSlam}
+                disabled={cooldowns.slam > 0}
+                className={`h-[54px] sm:h-[58px] px-1 py-1.5 rounded-xl border flex flex-col items-center justify-between overflow-hidden transition-all active:scale-95 ${
+                  cooldowns.slam > 0
+                    ? 'bg-[#181112]/60 border-rose-900/20 text-stone-600 cursor-not-allowed'
+                    : 'bg-gradient-to-b from-[#2A1215] to-[#1A0B0D] hover:from-[#3D181C] border-rose-500/40 hover:border-rose-400 text-rose-100 shadow-inner'
+                }`}
+                title="Masaya vur ve şüphelinin klavyesini 7 saniye kilitle"
+              >
+                <div className="flex items-center justify-center gap-1 leading-none">
+                  <span className="text-[11px] sm:text-xs">🔨</span>
+                  <span className="text-rose-400 text-[9px] font-mono font-bold">[7s]</span>
+                </div>
+                <span className="text-[10.5px] sm:text-xs font-extrabold tracking-tight whitespace-nowrap leading-none">
+                  SUSTUR
+                </span>
+                <span className="text-[8.5px] sm:text-[9px] text-rose-300/75 font-medium whitespace-nowrap leading-none">
+                  {cooldowns.slam > 0 ? `Bekle: ${cooldowns.slam}s` : 'Klavye Kilidi'}
+                </span>
+              </button>
 
-            {/* 2. ⚖️ [15s] EVET / HAYIR */}
-            <button
-              onClick={onYesNo}
-              disabled={cooldowns.yesNo > 0}
-              className={`h-[56px] sm:h-[60px] px-1 py-1.5 rounded-xl border flex flex-col items-center justify-between overflow-hidden transition-all active:scale-95 ${
-                cooldowns.yesNo > 0
-                  ? 'bg-[#18140E]/60 border-amber-900/20 text-stone-600 cursor-not-allowed'
-                  : 'bg-gradient-to-b from-[#261E14] to-[#17120C] hover:from-[#362A1B] border-amber-500/40 hover:border-amber-400 text-amber-100 shadow-inner'
-              }`}
-              title="Şüphelinin klavyesini kapatıp tek kelimelik EVET/HAYIR butonları ver"
-            >
-              <div className="flex items-center justify-center gap-1 leading-none">
-                <span className="text-[11px] sm:text-xs">⚖️</span>
-                <span className="text-amber-400 text-[9px] font-mono font-bold">[15s]</span>
-              </div>
-              <span className="text-[10px] sm:text-xs font-extrabold tracking-tighter whitespace-nowrap leading-none">
-                EVET / HAYIR
-              </span>
-              <span className="text-[8.5px] sm:text-[9px] text-amber-300/75 font-medium whitespace-nowrap leading-none">
-                {cooldowns.yesNo > 0 ? `Bekle: ${cooldowns.yesNo}s` : 'Tek Kelime'}
-              </span>
-            </button>
+              {/* 2. ⚖️ [15s] EVET / HAYIR */}
+              <button
+                onClick={onYesNo}
+                disabled={cooldowns.yesNo > 0}
+                className={`h-[54px] sm:h-[58px] px-1 py-1.5 rounded-xl border flex flex-col items-center justify-between overflow-hidden transition-all active:scale-95 ${
+                  cooldowns.yesNo > 0
+                    ? 'bg-[#18140E]/60 border-amber-900/20 text-stone-600 cursor-not-allowed'
+                    : 'bg-gradient-to-b from-[#261E14] to-[#17120C] hover:from-[#362A1B] border-amber-500/40 hover:border-amber-400 text-amber-100 shadow-inner'
+                }`}
+                title="Şüphelinin klavyesini kapatıp tek kelimelik EVET/HAYIR butonları ver"
+              >
+                <div className="flex items-center justify-center gap-1 leading-none">
+                  <span className="text-[11px] sm:text-xs">⚖️</span>
+                  <span className="text-amber-400 text-[9px] font-mono font-bold">[15s]</span>
+                </div>
+                <span className="text-[10px] sm:text-xs font-extrabold tracking-tighter whitespace-nowrap leading-none">
+                  EVET / HAYIR
+                </span>
+                <span className="text-[8.5px] sm:text-[9px] text-amber-300/75 font-medium whitespace-nowrap leading-none">
+                  {cooldowns.yesNo > 0 ? `Bekle: ${cooldowns.yesNo}s` : 'Tek Kelime'}
+                </span>
+              </button>
 
-            {/* 3. ⏱️ 5 SN BASKI */}
-            <button
-              onClick={onTimer}
-              disabled={cooldowns.timer > 0}
-              className={`h-[56px] sm:h-[60px] px-1 py-1.5 rounded-xl border flex flex-col items-center justify-between overflow-hidden transition-all active:scale-95 ${
-                cooldowns.timer > 0
-                  ? 'bg-[#161210]/60 border-orange-900/20 text-stone-600 cursor-not-allowed'
-                  : 'bg-gradient-to-b from-[#241A16] to-[#140E0C] hover:from-[#33241E] border-orange-400/35 hover:border-orange-300 text-orange-100 shadow-inner'
-              }`}
-              title="5 saniye içinde cevap veremezse gözlerini kaçırdı sayılır"
-            >
-              <div className="flex items-center justify-center gap-1 leading-none">
-                <span className="text-[11px] sm:text-xs">⏱️</span>
-                <span className="text-orange-400 text-[9px] font-mono font-bold">[5s]</span>
-              </div>
-              <span className="text-[10.5px] sm:text-xs font-extrabold tracking-tight whitespace-nowrap leading-none">
-                5 SN BASKI
-              </span>
-              <span className="text-[8.5px] sm:text-[9px] text-orange-300/75 font-medium whitespace-nowrap leading-none">
-                {cooldowns.timer > 0 ? `Bekle: ${cooldowns.timer}s` : 'Tereddüt'}
-              </span>
-            </button>
+              {/* 3. ⏱️ 5 SN BASKI */}
+              <button
+                onClick={onTimer}
+                disabled={cooldowns.timer > 0}
+                className={`h-[54px] sm:h-[58px] px-1 py-1.5 rounded-xl border flex flex-col items-center justify-between overflow-hidden transition-all active:scale-95 ${
+                  cooldowns.timer > 0
+                    ? 'bg-[#161210]/60 border-orange-900/20 text-stone-600 cursor-not-allowed'
+                    : 'bg-gradient-to-b from-[#241A16] to-[#140E0C] hover:from-[#33241E] border-orange-400/35 hover:border-orange-300 text-orange-100 shadow-inner'
+                }`}
+                title="5 saniye içinde cevap veremezse gözlerini kaçırdı sayılır"
+              >
+                <div className="flex items-center justify-center gap-1 leading-none">
+                  <span className="text-[11px] sm:text-xs">⏱️</span>
+                  <span className="text-orange-400 text-[9px] font-mono font-bold">[5s]</span>
+                </div>
+                <span className="text-[10.5px] sm:text-xs font-extrabold tracking-tight whitespace-nowrap leading-none">
+                  5 SN BASKI
+                </span>
+                <span className="text-[8.5px] sm:text-[9px] text-orange-300/75 font-medium whitespace-nowrap leading-none">
+                  {cooldowns.timer > 0 ? `Bekle: ${cooldowns.timer}s` : 'Tereddüt'}
+                </span>
+              </button>
 
-            {/* 4. 🚨 HÜKÜM VER */}
-            <button
-              onClick={onVerdict}
-              className="h-[56px] sm:h-[60px] px-1 py-1.5 rounded-xl border border-amber-400/70 hover:border-amber-300 bg-gradient-to-b from-amber-500/25 via-amber-700/20 to-[#1F160E] hover:from-amber-500/40 text-amber-200 shadow-[0_0_15px_rgba(245,158,11,0.2)] flex flex-col items-center justify-between overflow-hidden transition-all active:scale-95"
-              title="Sorguyu tamamla, gerekçeli kararı yaz ve nihai damgayı bas"
-            >
-              <div className="flex items-center justify-center gap-1 leading-none">
-                <span className="text-[11px] sm:text-xs">🚨</span>
-                <span className="text-amber-300 text-[9px] font-mono font-bold">KARAR</span>
-              </div>
-              <span className="text-[10.5px] sm:text-xs font-extrabold tracking-tight whitespace-nowrap leading-none">
-                HÜKÜM VER
-              </span>
-              <span className="text-[8.5px] sm:text-[9px] text-amber-300/85 font-medium whitespace-nowrap leading-none">
-                Damgala
-              </span>
-            </button>
-          </div>
+              {/* 4. 🚨 HÜKÜM VER (SADECE HAKİMLER!) */}
+              <button
+                onClick={onVerdict}
+                className="h-[54px] sm:h-[58px] px-1 py-1.5 rounded-xl border border-amber-400/70 hover:border-amber-300 bg-gradient-to-b from-amber-500/25 via-amber-700/20 to-[#1F160E] hover:from-amber-500/40 text-amber-200 shadow-[0_0_15px_rgba(245,158,11,0.2)] flex flex-col items-center justify-between overflow-hidden transition-all active:scale-95"
+                title="Sorguyu tamamla, gerekçeli kararı yaz ve nihai damgayı bas"
+              >
+                <div className="flex items-center justify-center gap-1 leading-none">
+                  <span className="text-[11px] sm:text-xs">🚨</span>
+                  <span className="text-amber-300 text-[9px] font-mono font-bold">KARAR</span>
+                </div>
+                <span className="text-[10.5px] sm:text-xs font-extrabold tracking-tight whitespace-nowrap leading-none">
+                  HÜKÜM VER
+                </span>
+                <span className="text-[8.5px] sm:text-[9px] text-amber-300/85 font-medium whitespace-nowrap leading-none">
+                  Damgala
+                </span>
+              </button>
+            </div>
+
+            {/* Hakimlere Özel Hızlı Çapraz Sorgu Çipleri */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar select-none">
+              {JUDGE_QUICK_QUESTIONS.map((q) => (
+                <button
+                  key={q.label}
+                  type="button"
+                  onClick={() => handleQuickAction(q.text)}
+                  className="shrink-0 px-2.5 py-1 rounded-lg bg-rose-950/35 hover:bg-rose-900/50 border border-rose-500/25 text-rose-200 text-[10.5px] font-semibold whitespace-nowrap transition-all active:scale-95"
+                >
+                  {q.label}
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         {/* ============================================================== */}
-        {/* B. ŞÜPHELİ EVET / HAYIR KISKACI MODU                           */}
+        {/* B. SADECE ŞÜPHELİ: SAVUNMA HAMLELERİ VEYA CEZA KISKAÇLARI      */}
+        {/* ============================================================== */}
+        {!isJudge && (
+          <>
+            {/* 5 Saniye Tereddüt Baskısı Geri Sayım Uyarısı */}
+            {isTimerClamp && timerSeconds > 0 && (
+              <div className="w-full bg-orange-950/80 border border-orange-500/70 rounded-xl px-3 py-1.5 flex items-center justify-between text-xs font-extrabold text-orange-200 animate-pulse">
+                <span>⏱️ TEREDDÜT BASKISI! Hemen cevap ver:</span>
+                <span className="bg-orange-600 text-white px-2 py-0.5 rounded-md font-mono">
+                  {timerSeconds}s
+                </span>
+              </div>
+            )}
+
+            {/* Şüpheliye Özel Hızlı Savunma Hamlesi Butonları (Kıskaç yokken görünür) */}
+            {!isYesNoClamp && (
+              <div className="grid grid-cols-4 gap-1.5 select-none">
+                {SUSPECT_QUICK_DEFENSES.map((def) => (
+                  <button
+                    key={def.label}
+                    type="button"
+                    disabled={isSuspectSilenced}
+                    onClick={() => handleQuickAction(def.text)}
+                    className={`py-1.5 px-1 rounded-xl border text-[10px] sm:text-[11px] font-bold whitespace-nowrap truncate transition-all active:scale-95 ${
+                      isSuspectSilenced
+                        ? 'bg-stone-900/50 border-white/5 text-stone-600 cursor-not-allowed'
+                        : 'bg-amber-950/35 hover:bg-amber-900/50 border-amber-500/30 text-amber-200 shadow-sm'
+                    }`}
+                    title={def.text}
+                  >
+                    {def.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ============================================================== */}
+        {/* C. ŞÜPHELİ EVET / HAYIR KISKACI MODU VEYA MESAJ GİRİŞ ÇUBUĞU  */}
         {/* ============================================================== */}
         {!isJudge && isYesNoClamp ? (
-          <div className="w-full flex flex-col gap-1.5 select-none animate-bounce">
-            <div className="text-xs font-semibold text-amber-400 text-center flex items-center justify-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-amber-400" />
-              <span>Tek kelimeyle cevap ver:</span>
+          <div className="w-full bg-[#1C140D] border border-amber-500/50 rounded-xl p-2.5 flex flex-col gap-2 select-none shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+            <div className="text-xs font-extrabold text-amber-300 text-center flex items-center justify-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>HAKİM TEK KELİME KISKACI UYGULADI! Seçimini yap:</span>
             </div>
             <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => handleYesNoSubmit('EVET')}
-                className="flex-1 min-h-[44px] bg-gradient-to-b from-emerald-700 to-emerald-900 hover:from-emerald-600 border border-emerald-500/50 active:scale-95 text-white font-extrabold text-sm tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 transition-all"
+                className="flex-1 min-h-[44px] bg-gradient-to-b from-emerald-600 to-emerald-800 hover:from-emerald-500 border border-emerald-400/60 active:scale-95 text-white font-extrabold text-sm tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 transition-all"
               >
                 <Check className="w-4 h-4 stroke-[3]" />
                 <span>EVET</span>
               </button>
               <button
+                type="button"
                 onClick={() => handleYesNoSubmit('HAYIR')}
-                className="flex-1 min-h-[44px] bg-gradient-to-b from-rose-800 to-rose-950 hover:from-rose-700 border border-rose-500/50 active:scale-95 text-white font-extrabold text-sm tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 transition-all"
+                className="flex-1 min-h-[44px] bg-gradient-to-b from-rose-700 to-rose-900 hover:from-rose-600 border border-rose-400/60 active:scale-95 text-white font-extrabold text-sm tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 transition-all"
               >
                 <X className="w-4 h-4 stroke-[3]" />
                 <span>HAYIR</span>
@@ -363,28 +440,27 @@ export const CourtroomBottomSheet: React.FC<CourtroomBottomSheetProps> = ({
             </div>
           </div>
         ) : (
-          /* ============================================================== */
-          /* C. STANDART MESAJ YAZMA GİRİŞ ÇUBUĞU                           */
-          /* ============================================================== */
           <form onSubmit={handleSubmit} className="w-full flex items-center gap-2">
             <div className="relative flex-1 min-w-0">
               <input
                 type="text"
                 value={inputText}
                 onChange={handleInputChange}
-                disabled={isSilenced}
+                disabled={isSuspectSilenced}
                 maxLength={140}
                 placeholder={
-                  isSilenced
-                    ? `🔒 Klavyen kilitli (${silencedSeconds}s)`
+                  isSuspectSilenced
+                    ? `🔒 Hakim tokmağı vurdu! Klavyen kilitli (${silencedSeconds}s)`
                     : isJudge
-                    ? 'Çapraz sorgu sorusu sor...'
-                    : 'Savunmanı tutanağa geçir...'
+                    ? 'Hakim olarak çapraz sorgu sorusu sor...'
+                    : 'Şüpheli olarak savunmanı tutanağa geçir...'
                 }
                 className={`w-full h-10 sm:h-11 pl-3 pr-12 rounded-xl border text-[13px] sm:text-sm transition-all focus:outline-none ${
-                  isSilenced
+                  isSuspectSilenced
                     ? 'bg-rose-950/30 border-rose-500/40 text-rose-300 placeholder-rose-400/60 cursor-not-allowed'
-                    : 'bg-[#0D0B0A]/90 border-amber-200/15 focus:border-amber-400/60 text-[#F5F2EB] placeholder-amber-100/35 shadow-inner'
+                    : isJudge
+                    ? 'bg-[#0D0B0A]/90 border-rose-500/25 focus:border-rose-400/70 text-[#F5F2EB] placeholder-rose-200/35 shadow-inner'
+                    : 'bg-[#0D0B0A]/90 border-amber-400/25 focus:border-amber-400/70 text-[#F5F2EB] placeholder-amber-100/35 shadow-inner'
                 }`}
               />
               <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-amber-200/35 pointer-events-none">
@@ -394,10 +470,12 @@ export const CourtroomBottomSheet: React.FC<CourtroomBottomSheetProps> = ({
 
             <button
               type="submit"
-              disabled={isSilenced || !inputText.trim()}
+              disabled={isSuspectSilenced || !inputText.trim()}
               className={`h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl font-bold flex items-center justify-center shrink-0 transition-all ${
-                isSilenced || !inputText.trim()
+                isSuspectSilenced || !inputText.trim()
                   ? 'bg-stone-800/60 border border-white/5 text-stone-600 cursor-not-allowed'
+                  : isJudge
+                  ? 'bg-gradient-to-b from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 border border-rose-400 text-white shadow-[0_0_15px_rgba(244,63,94,0.3)] active:scale-95'
                   : 'bg-gradient-to-b from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 border border-amber-300 text-stone-950 shadow-[0_0_15px_rgba(245,158,11,0.3)] active:scale-95'
               }`}
             >

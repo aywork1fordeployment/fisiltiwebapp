@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { VerdictType, PlayerRole } from '../../types/game.types';
-import { Gavel, AlertCircle } from 'lucide-react';
+import { Gavel, AlertCircle, X } from 'lucide-react';
 
 interface VerdictVotingModalProps {
   isOpen: boolean;
   userRole: PlayerRole;
   onDecideVerdict: (verdict: VerdictType, reason: string) => void;
+  onClose?: () => void;
 }
 
 interface VerdictOption {
@@ -60,6 +61,7 @@ export const VerdictVotingModal: React.FC<VerdictVotingModalProps> = ({
   isOpen,
   userRole,
   onDecideVerdict,
+  onClose,
 }) => {
   const [selectedVerdict, setSelectedVerdict] = useState<VerdictType>('KATIKSIZ TOKSİK');
   const [customReason, setCustomReason] = useState(DEFAULT_REASONS['KATIKSIZ TOKSİK']);
@@ -74,6 +76,7 @@ export const VerdictVotingModal: React.FC<VerdictVotingModalProps> = ({
   };
 
   const handleConfirm = () => {
+    if (isSuspect) return;
     onDecideVerdict(selectedVerdict, customReason.trim() || DEFAULT_REASONS[selectedVerdict]);
   };
 
@@ -89,7 +92,7 @@ export const VerdictVotingModal: React.FC<VerdictVotingModalProps> = ({
             Hüküm Veriliyor...
           </h2>
           <p className="text-xs text-stone-400 font-normal leading-relaxed">
-            180 saniyelik çapraz sorgu sona erdi. Yargıçlar şu anda aynanın arkasında gizli oylama yapıyor ve dosyana nihai damgayı basıyor!
+            180 saniyelik çapraz sorgu sona erdi. Hakimler şu anda kürsüde gizli oylama yapıyor ve dosyana nihai damgayı basıyor!
           </p>
           <div className="w-full bg-[#141722] h-2 rounded-full overflow-hidden">
             <div className="bg-rose-500 h-full w-full animate-pulse"></div>
@@ -99,24 +102,36 @@ export const VerdictVotingModal: React.FC<VerdictVotingModalProps> = ({
     );
   }
 
-  // Yargıç İçin Damga Basma Ekranı
+  // Hakim İçin Damga Basma Ekranı
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-fade-in">
       <div className="w-full max-w-md bg-[#181B26] border border-white/10 rounded-2xl p-5 shadow-2xl flex flex-col gap-3.5">
         
         {/* Üst Başlık */}
-        <div className="flex items-center gap-2.5 border-b border-white/10 pb-3">
-          <div className="p-2 rounded-xl bg-rose-500/20 text-rose-400">
-            <Gavel className="w-5 h-5" />
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-rose-500/20 text-rose-400">
+              <Gavel className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-bold text-base sm:text-lg text-stone-100">
+                Nihai Hüküm ve Damga
+              </h2>
+              <p className="text-xs text-stone-400">
+                Şüphelinin dava dosyasına basılacak kararı seç
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-bold text-base sm:text-lg text-stone-100">
-              Nihai Hüküm ve Damga
-            </h2>
-            <p className="text-xs text-stone-400">
-              Şüphelinin dava dosyasına basılacak kararı seç
-            </p>
-          </div>
+
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-100 hover:bg-white/10 transition-colors"
+              title="Sorguya Geri Dön"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* 5 Hüküm Seçeneği */}

@@ -39,7 +39,7 @@ export const SuspectInputBar: React.FC<SuspectInputBarProps> = ({
   };
 
   const handleYesNoClick = (choice: 'EVET' | 'HAYIR') => {
-    onSendMessage(`[${choice}]`);
+    onSendMessage(choice);
   };
 
   // 1. EVET / HAYIR KISKACI MODU

@@ -37,24 +37,30 @@ export const NoirHeader: React.FC<NoirHeaderProps> = ({
     userRole === 'detective';
 
   const isSuspect = userRole === 'supheli' || userRole === 'suspect';
+  const isFirstJudge = userRole === 'sert_hakim' || userRole === 'prosecutor';
+  const roleBadgeLabel = isSuspect
+    ? 'ROLÜN: ŞÜPHELİ'
+    : isFirstJudge
+    ? 'ROLÜN: 1. HAKİM'
+    : 'ROLÜN: 2. HAKİM';
 
   return (
-    <header className="w-full h-12 bg-[#120E0C]/90 backdrop-blur-md border-b border-amber-500/20 px-3 sm:px-4 flex items-center justify-between z-30 select-none shadow-md shrink-0">
+    <header className="w-full h-12 bg-[#120E0C]/90 backdrop-blur-md border-b border-amber-500/20 px-2.5 sm:px-4 flex items-center justify-between z-30 select-none shadow-md shrink-0">
       
-      {/* Sol: Oda Kodu & POV Kamera Rozeti */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-bold text-amber-100/90 bg-black/60 border border-amber-200/15 px-2.5 py-1 rounded-lg shadow-inner">
+      {/* Sol: Oda Kodu & Oyuncunun Kendi Rol Rozeti (Mobil ve Masaüstünde Her Zaman Görünür) */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <span className="text-[11px] sm:text-xs font-bold text-amber-100/90 bg-black/60 border border-amber-200/15 px-2 py-1 rounded-lg shadow-inner">
           #{roomCode}
         </span>
 
-        {/* POV Kamera Modu */}
-        <div className={`hidden xs:flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold tracking-wider uppercase backdrop-blur-md ${
+        {/* Kendi Rolün Rozeti */}
+        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] sm:text-[11px] font-extrabold tracking-wide uppercase backdrop-blur-md whitespace-nowrap ${
           isSuspect
-            ? 'bg-amber-950/40 border-amber-500/30 text-amber-300'
-            : 'bg-rose-950/40 border-rose-500/30 text-rose-300'
+            ? 'bg-amber-950/60 border-amber-400/50 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+            : 'bg-rose-950/60 border-rose-500/50 text-rose-200 shadow-[0_0_10px_rgba(244,63,94,0.2)]'
         }`}>
-          <Video className="w-3 h-3" />
-          <span>{isSuspect ? 'SANIK KÜRSÜSÜ (POV)' : 'HAKİM KÜRSÜSÜ (POV)'}</span>
+          <Video className="w-3 h-3 shrink-0 hidden sm:inline" />
+          <span>{roleBadgeLabel}</span>
         </div>
       </div>
 
@@ -99,10 +105,11 @@ export const NoirHeader: React.FC<NoirHeaderProps> = ({
             )}
           </button>
         ) : (
-          /* Şüpheli İçin Sağ Üst İbare */
-          <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-semibold text-amber-200/70">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping inline-block" />
-            <span>ANONİM SORGU SALONU</span>
+          /* Şüpheli İçin Sağ Üst Savunma Modu İbaresi */
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-amber-300 bg-amber-950/50 border border-amber-500/30 px-2 sm:px-2.5 py-1 rounded-lg">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping inline-block shrink-0" />
+            <span className="hidden sm:inline">SANIK SAVUNMA KÜRSÜSÜ</span>
+            <span className="sm:hidden">SAVUNMA MODU</span>
           </div>
         )}
 

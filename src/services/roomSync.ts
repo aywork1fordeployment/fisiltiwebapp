@@ -29,6 +29,7 @@ export interface ServerVerdict {
 
 export interface ServerRoom {
   roomId: string;
+  role?: string;
   confession: string;
   category?: string;
   timeLeft: number;

@@ -138,21 +138,18 @@ function broadcastRoom(room) {
   const isEnded = room.status === 'ended';
 
   // Hakimler: Tüm fısıltı içeriğini eksiksiz görür
-  const judgeState = {
-    type: 'ROOM_UPDATE',
-    room: {
-      roomId: room.roomId,
-      confession: room.confession,
-      category: room.category,
-      timeLeft: room.timeLeft,
-      status: room.status,
-      verdict: room.verdict,
-      messages: room.messages,
-      whispers: room.whispers,
-      whisperCount: room.whispers.length,
-      isWhispering: room.isWhispering,
-      activePenalty: room.activePenalty
-    }
+  const baseJudgeRoom = {
+    roomId: room.roomId,
+    confession: room.confession,
+    category: room.category,
+    timeLeft: room.timeLeft,
+    status: room.status,
+    verdict: room.verdict,
+    messages: room.messages,
+    whispers: room.whispers,
+    whisperCount: room.whispers.length,
+    isWhispering: room.isWhispering,
+    activePenalty: room.activePenalty
   };
 
   // Şüpheli: Oyun sırasında whispers: [] (boş dizi), sadece whisperCount alır!
@@ -161,6 +158,7 @@ function broadcastRoom(room) {
     type: 'ROOM_UPDATE',
     room: {
       roomId: room.roomId,
+      role: 'supheli',
       confession: room.confession,
       category: room.category,
       timeLeft: room.timeLeft,
@@ -184,7 +182,13 @@ function broadcastRoom(room) {
   ].filter(Boolean);
 
   judgeClients.forEach(clientWs => {
-    send(clientWs, judgeState);
+    send(clientWs, {
+      type: 'ROOM_UPDATE',
+      room: {
+        ...baseJudgeRoom,
+        role: clientWs.role || 'sert_hakim'
+      }
+    });
   });
 }
 
@@ -289,6 +293,14 @@ function createMatchRoom(suspect, sertHakim, yumusakHakim = null) {
     }
     room.timeLeft -= 1;
     if (room.activePenalty && room.activePenalty.expiresAt <= Date.now()) {
+      if (room.activePenalty.type === 'timer5') {
+        room.messages.push({
+          id: 'sys_hes_' + Date.now(),
+          sender: 'system',
+          text: '💦 [TEREDDÜT TESPİT EDİLDİ! Şüpheli 5 saniye içinde cevap veremedi ve gözlerini kaçırdı!]',
+          time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+        });
+      }
       room.activePenalty = null;
     }
     if (room.timeLeft <= 0) {
@@ -481,11 +493,16 @@ wss.on('connection', (ws, req) => {
 
       // Tek kelime kıskacı (Evet / Hayır) denetimi
       if (ws.role === 'supheli' && room.activePenalty?.type === 'eh') {
-        const lower = cleanText.toLowerCase();
-        if (lower !== 'evet' && lower !== 'hayır' && lower !== 'hayir') {
+        const normalized = cleanText.replace(/[\[\]\s.!]/g, '').toLowerCase();
+        if (normalized !== 'evet' && normalized !== 'hayır' && normalized !== 'hayir') {
           send(ws, { type: 'ERROR', message: 'Sadece "Evet" veya "Hayır" yazabilirsiniz.' });
           return;
         }
+        room.activePenalty = null;
+      }
+
+      // 5 Saniye Tereddüt Baskısı altında şüpheli cevap verdiyse cezayı temizle
+      if (ws.role === 'supheli' && room.activePenalty?.type === 'timer5') {
         room.activePenalty = null;
       }
 
