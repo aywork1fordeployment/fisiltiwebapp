@@ -312,14 +312,15 @@ wss.on('connection', (ws, req) => {
   // ==============================================================
   // 6. CSWSH / ORIGIN KONTROLÜ
   // ==============================================================
-  const origin = req.headers.origin;
-  const allowedOrigin = process.env.ALLOWED_ORIGIN;
+  const origin = (req.headers.origin || '').trim().replace(/\/+$/, '');
+  const allowedOrigin = (process.env.ALLOWED_ORIGIN || '').trim().replace(/\/+$/, '');
 
-  if (origin) {
+  if (origin && allowedOrigin && allowedOrigin !== '*') {
     const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
-    const isAllowed = allowedOrigin && (origin === allowedOrigin || origin.endsWith(allowedOrigin));
+    const isVercel = origin.endsWith('.vercel.app');
+    const isAllowed = origin === allowedOrigin || origin.endsWith(allowedOrigin) || isVercel;
 
-    if (allowedOrigin && !isAllowed && !isLocalhost) {
+    if (!isAllowed && !isLocalhost) {
       ws.close(1008, 'Yetkisiz Origin');
       return;
     }

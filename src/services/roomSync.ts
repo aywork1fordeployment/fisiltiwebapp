@@ -102,6 +102,7 @@ class FsWebSocketClient {
   private ws: WebSocket | null = null;
   private url: string = '';
   private reconnectTimer: NodeJS.Timeout | null = null;
+  private pendingJoinPayload: any = null;
 
   private onQueueStatusCallback: ((data: QueueStatusPayload) => void) | null = null;
   private onMatchFoundCallback: ((data: { role: string; room: ServerRoom }) => void) | null = null;
@@ -109,9 +110,20 @@ class FsWebSocketClient {
   private onUserTypingCallback: ((data: { role: string; isTyping: boolean }) => void) | null = null;
 
   constructor() {
+    const isLocal =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+    const envUrl =
+      typeof process !== 'undefined' && process.env.REACT_APP_WS_URL
+        ? process.env.REACT_APP_WS_URL.trim().replace(/\/+$/, '').replace(/^https:\/\//i, 'wss://').replace(/^http:\/\//i, 'ws://')
+        : '';
+
     this.url =
-      (typeof process !== 'undefined' && process.env.REACT_APP_WS_URL) ||
-      (typeof window !== 'undefined' ? `ws://${window.location.hostname}:4000` : 'ws://localhost:4000');
+      envUrl ||
+      (isLocal
+        ? `ws://${window.location.hostname}:4000`
+        : 'wss://fisilticourtwebservice.onrender.com');
 
     if (typeof window !== 'undefined') {
       this.connect();
@@ -128,6 +140,13 @@ class FsWebSocketClient {
 
       this.ws.onopen = () => {
         console.log('✅ Fısıltı Mahkeme Salonu WebSocket Sunucusuna Bağlandı:', this.url);
+        if (this.pendingJoinPayload && this.ws && this.ws.readyState === WebSocket.OPEN) {
+          try {
+            this.ws.send(JSON.stringify(this.pendingJoinPayload));
+          } catch {
+            // ignore
+          }
+        }
       };
 
       this.ws.onmessage = (event) => {
@@ -136,6 +155,7 @@ class FsWebSocketClient {
           if (data.type === 'QUEUE_STATUS') {
             this.onQueueStatusCallback?.(data as QueueStatusPayload);
           } else if (data.type === 'MATCH_FOUND') {
+            this.pendingJoinPayload = null;
             this.onMatchFoundCallback?.(data);
           } else if (data.type === 'ROOM_UPDATE' && data.room) {
             this.onRoomUpdateCallback?.(data.room);
@@ -179,20 +199,23 @@ class FsWebSocketClient {
             // ignore
           }
         }
-      }, 300);
+      }, 500);
     }
   }
 
   public joinQueue(role: 'supheli' | 'yargic' | 'hakim', confession?: string, category?: string) {
-    this.send({
+    const payload = {
       type: 'JOIN_QUEUE',
       role,
       confession,
       category,
-    });
+    };
+    this.pendingJoinPayload = payload;
+    this.send(payload);
   }
 
   public leaveQueue() {
+    this.pendingJoinPayload = null;
     this.send({ type: 'LEAVE_QUEUE' });
   }
 
