@@ -1,5 +1,5 @@
 /**
- * FISILTI: AYNALI SORGU ODASI
+ * KARAR! | ANONİM SORGU SALONU
  * Sıfır-Bağımlılıklı Native Web Audio API Ses Sentezleyici
  * 
  * Harici MP3 veya CDN dosyası kullanılmaz; tüm sesler tarayıcının

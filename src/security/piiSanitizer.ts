@@ -1,5 +1,5 @@
 /**
- * FISILTI: AYNALI SORGU ODASI
+ * KARAR! | ANONİM SORGU SALONU
  * PII Sanitizer & Anti-Doxxing Security Shield
  * 
  * SIFIR-VERİ ve KVKK/GDPR UYUMLULUK GÜVENCESİ:

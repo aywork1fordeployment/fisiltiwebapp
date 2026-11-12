@@ -11,7 +11,7 @@ const MAX_QUEUE_SIZE = 200;
 // ==============================================================
 const server = http.createServer((req, res) => {
   res.writeHead(200);
-  res.end('Fisilti WS Active');
+  res.end('KARAR! WS Active');
 });
 
 const wss = new WebSocketServer({
@@ -20,7 +20,7 @@ const wss = new WebSocketServer({
 });
 
 server.listen(PORT, () => {
-  console.log(`🚀 Fısıltı Mahkeme Salonu WebSocket Sunucusu ws://localhost:${PORT} üzerinde çalışıyor...`);
+  console.log(`🚀 KARAR! | Mahkeme Salonu WebSocket Sunucusu ws://localhost:${PORT} üzerinde çalışıyor...`);
 });
 
 wss.on('error', (err) => {
@@ -307,7 +307,7 @@ function createMatchRoom(suspect, sertHakim, yumusakHakim = null) {
       room.timeLeft = 0;
       room.status = 'ended';
       room.verdict = room.verdict || {
-        stamp: 'SÜRE DOLDU - KARARSIZ',
+        stamp: 'SÜRE DOLDU | KARARSIZ',
         reason: 'Hakimler 180 saniyelik süre içinde nihai ortak hükme varamadı.',
         by: 'system'
       };

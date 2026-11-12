@@ -1,5 +1,5 @@
 /**
- * FISILTI: ASİMETRİK POV MAHKEME SALONU
+ * KARAR! | ASİMETRİK POV MAHKEME SALONU
  * Gerçek Zamanlı In-Memory WebSocket İstemcisi
  * 
  * Sıfır LocalStorage, Sıfır SessionStorage, Sıfır BroadcastChannel!
@@ -140,7 +140,7 @@ class FsWebSocketClient {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-        console.log('✅ Fısıltı Mahkeme Salonu WebSocket Sunucusuna Bağlandı:', this.url);
+        console.log('✅ KARAR! | Mahkeme Salonu WebSocket Sunucusuna Bağlandı:', this.url);
         if (this.pendingJoinPayload && this.ws && this.ws.readyState === WebSocket.OPEN) {
           try {
             this.ws.send(JSON.stringify(this.pendingJoinPayload));

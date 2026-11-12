@@ -65,7 +65,7 @@ export const CaseFileReceipt: React.FC<CaseFileReceiptProps> = ({
         backgroundColor: '#090A0F',
       });
       const link = document.createElement('a');
-      link.download = `fisilti-dava-dosyasi-${roomCode}.png`;
+      link.download = `karar-dava-dosyasi-${roomCode}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -75,20 +75,29 @@ export const CaseFileReceipt: React.FC<CaseFileReceiptProps> = ({
     }
   };
 
+  const currentOrigin =
+    typeof window !== 'undefined' && window.location.origin
+      ? window.location.origin
+      : 'https://karar.vercel.app';
+  const currentHost =
+    typeof window !== 'undefined' && window.location.host
+      ? window.location.host
+      : 'karar.vercel.app';
+
   const handleShareTwitter = () => {
-    const tweetText = `🕵️‍♂️ Anonim Sorgu Odası'nda çapraz sorguya çekildim!
+    const tweetText = `🕵️‍♂️ KARAR! | Anonim Sorgu Salonu'nda çapraz sorguya çekildim!
 Hüküm: [${verdict}] ⚖️
-"Aynanın arkasında hakkımda konuştukları gizli fısıltıları gördüm..."
+"Kürsüde hakkımda konuştukları gizli fısıltıları gördüm..."
 
 Sen olsan ne karar verirdin? Odaya gir:
-https://fisilticourt.vercel.app`;
+${currentOrigin}`;
 
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
     window.open(url, '_blank');
   };
 
   const handleCopyShare = () => {
-    const text = `🕵️‍♂️ FISILTI: AYNALI SORGU ODASI — #${roomCode} Dava Dosyası: ${verdict}!\nhttps://fisilticourt.vercel.app`;
+    const text = `🕵️‍♂️ KARAR! | ANONİM SORGU SALONU | #${roomCode} Dava Dosyası: ${verdict}!\n${currentOrigin}`;
     navigator.clipboard?.writeText(text);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -100,7 +109,7 @@ https://fisilticourt.vercel.app`;
       {/* Üst İfşa Rozeti & Başlık */}
       <div className="text-center flex flex-col items-center gap-1">
         <span className="text-[11px] font-semibold text-rose-300 bg-rose-500/15 border border-rose-500/30 px-3 py-0.5 rounded-full">
-          🔓 Aynanın Arkası Açıldı — Tüm Sırlar İfşa Oldu!
+          🔓 Kürsü Arkası Açıldı | Tüm Sırlar İfşa Oldu!
         </span>
         <h2 className="font-extrabold text-xl text-stone-100 tracking-tight">
           Sorgu Tutanağı ve Dava Dosyası
@@ -221,7 +230,7 @@ https://fisilticourt.vercel.app`;
           {/* En Alttaki Viral Call-To-Action */}
           <div className="w-full pt-2 border-t border-dashed border-white/10 flex items-center justify-between text-[10px] text-stone-500">
             <span>🕵️‍♂️ Sen olsan ne karar verirdin?</span>
-            <span className="text-amber-400 font-bold">fisilticourt.vercel.app</span>
+            <span className="text-amber-400 font-bold">⚖️ KARAR! | {currentHost}</span>
           </div>
 
           {/* Kurgusal Oyun İbaresi */}

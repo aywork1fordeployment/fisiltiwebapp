@@ -1,5 +1,5 @@
 /**
- * FISILTI: AYNALI SORGU ODASI
+ * KARAR! | ANONİM SORGU SALONU
  * Hafif Anti-Doxxing Güvenlik Filtresi (src/utils/securityFilter.ts)
  * 
  * Normal isimleri ve sohbet akışını kısıtlamaz.

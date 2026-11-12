@@ -1,5 +1,5 @@
 /**
- * FISILTI: AYNALI SORGU ODASI
+ * KARAR! | ANONİM SORGU SALONU
  * In-Memory Rate Limiter & Flood Shield
  * 
  * Veritabanı ve kalıcı depolama olmadan tamamen RAM içi (ephemeral)

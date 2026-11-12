@@ -55,7 +55,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       <div className="w-full flex flex-wrap items-center justify-between gap-2">
         <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[10.5px] sm:text-xs font-semibold tracking-wide whitespace-nowrap">
           <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-          <span>Sıfır Kayıt & Sıfır-Veri | 180sn</span>
+          <span>Sıfır Kayıt & Sıfır Veri | 180sn</span>
         </div>
 
         {onResetStorage && (
@@ -73,7 +73,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       {/* Başlık */}
       <div className="flex flex-col items-center gap-1">
         <h1 className="font-extrabold text-3xl sm:text-5xl text-stone-100 tracking-tight leading-none">
-          ⚖️ FISILTI
+          ⚖️ KARAR!
         </h1>
         <h2 className="font-bold text-lg sm:text-2xl text-amber-400 tracking-wider">
           Asimetrik Mahkeme Salonu
@@ -115,7 +115,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             </div>
 
             <p className="text-xs text-stone-400 font-medium">
-              — {statusMessage}
+              | {statusMessage}
             </p>
           </div>
 
